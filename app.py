@@ -25,6 +25,8 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 try:
     from transformers import pipeline
     import torch
+    torch.set_num_threads(1)
+    torch.set_grad_enabled(False) # Save memory during inference
     model_path = os.path.join(BASE_DIR, "models", "hf_model")
     # Use GPU if available, else CPU
     device = 0 if torch.cuda.is_available() else -1
