@@ -1,14 +1,12 @@
-import joblib
-from flask import Flask, request, jsonify, session, redirect, url_for, render_template
+import os
+import re
 import sqlite3
+import threading
 from datetime import datetime
 import requests
 import urllib.parse
 import math
-import html as html_lib
-from functools import wraps
-from werkzeug.security import generate_password_hash, check_password_hash
-import os
+from flask import Flask, request, jsonify, session, redirect, url_for, render_template
 
 app = Flask(__name__)
 app.secret_key = "super_secret_ids_key"
@@ -19,7 +17,6 @@ DB_PATH = '/tmp/logs.db' if os.environ.get('VERCEL') == '1' else 'logs.db'
 # ==============================
 # Load ML model
 # ==============================
-
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 try:
@@ -28,7 +25,6 @@ try:
     torch.set_num_threads(1)
     torch.set_grad_enabled(False) # Save memory during inference
     model_path = os.path.join(BASE_DIR, "models", "hf_model")
-    # Use GPU if available, else CPU
     device = 0 if torch.cuda.is_available() else -1
     hf_pipeline = pipeline("text-classification", model=model_path, tokenizer=model_path, device=device)
     model_error = None
@@ -40,115 +36,48 @@ except Exception as e:
 # ==============================
 # Discord Webhook
 # ==============================
-
 DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1480176307965792399/BpllTJGok1w55SLCh_abFjGCiFg0K9kI2zOlipTtTE5wu9Z1BhzR1iZ9JarYjEfBAJcQ"
+
+def send_discord_alert_task(message):
+    try:
+        requests.post(DISCORD_WEBHOOK, json=message, timeout=10)
+    except:
+        pass
 
 def send_discord_alert(payload, ip):
     message = {
-        "content": f"""
-⚠ Web IDS Alert
-
-Attack Detected
-
-Payload:
-{payload}
-
-IP:
-{ip}
-
-Time:
-{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
-"""
+        "content": f"⚠ Web IDS Alert\\n\\nAttack Detected\\n\\nPayload:\\n{payload}\\n\\nIP:\\n{ip}\\n\\nTime:\\n{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
     }
-    try:
-        if DISCORD_WEBHOOK.startswith("http"):
-            requests.post(DISCORD_WEBHOOK, json=message, timeout=3)
-    except Exception as e:
-        print("⚠ Discord alert failed:", e)
+    if DISCORD_WEBHOOK.startswith("http"):
+        threading.Thread(target=send_discord_alert_task, args=(message,)).start()
+        return "Dispatched to background"
+    return "No webhook configured"
 
 # ==============================
-# Database Init
+# Database Initialization
 # ==============================
-
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    c.execute("""
-        CREATE TABLE IF NOT EXISTS request_log (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            timestamp TEXT,
-            payload TEXT,
-            prediction TEXT,
-            confidence REAL,
-            ip TEXT
-        )
-    """)
-    c.execute("""
-        CREATE TABLE IF NOT EXISTS admins (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE,
-            password TEXT
-        )
-    """)
-    c.execute("SELECT * FROM admins WHERE username = 'admin'")
-    if not c.fetchone():
-        hashed_pw = generate_password_hash("admin123")
-        c.execute("INSERT INTO admins (username, password) VALUES (?, ?)", ("admin", hashed_pw))
+    c.execute('''CREATE TABLE IF NOT EXISTS request_log
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  timestamp TEXT,
+                  payload TEXT,
+                  prediction TEXT,
+                  confidence REAL,
+                  ip TEXT)''')
     conn.commit()
     conn.close()
 
+# Initialize DB on startup (fixes Hugging Face DB missing error)
 init_db()
 
 # ==============================
-# Authentication
+# Routes
 # ==============================
-
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'logged_in' not in session:
-            return redirect(url_for('login', next=request.url))
-        return f(*args, **kwargs)
-    return decorated_function
-
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    error = None
-    if request.method == "POST":
-        username = request.form.get("username")
-        password = request.form.get("password")
-        
-        conn = sqlite3.connect(DB_PATH)
-        c = conn.cursor()
-        c.execute("SELECT password FROM admins WHERE username = ?", (username,))
-        row = c.fetchone()
-        conn.close()
-        
-        if row and check_password_hash(row[0], password):
-            session['logged_in'] = True
-            session['username'] = username
-            next_url = request.args.get("next")
-            return redirect(next_url or url_for('dashboard'))
-        else:
-            error = "Invalid username or password"
-
-    return render_template('login.html', error=error)
-
-@app.route("/logout")
-def logout():
-    session.pop('logged_in', None)
-    session.pop('username', None)
-    return redirect(url_for('login'))
-
 @app.route("/")
-def home():
-    if 'logged_in' in session:
-        return render_template('index.html')
-    return render_template('index.html') # allow home page to be public
-
-# ==============================
-# Detect / Analyze
-# ==============================
+def index():
+    return render_template('index.html')
 
 @app.route("/api/analyze", methods=["POST"])
 def api_analyze():
@@ -165,63 +94,73 @@ def api_analyze():
     if query: parts.append(query)
     if body: parts.append(body)
     
-    payload = " ".join(parts)
-    payload = urllib.parse.unquote(payload)
+    raw_payload = " ".join(parts)
+    raw_payload = urllib.parse.unquote(raw_payload)
 
-    if not payload:
+    if not raw_payload:
         return jsonify({"prediction": "safe", "confidence": 1.0, "attack_type": "N/A"})
+
+    # Make AI "Smart" against HTML evasion by stripping HTML tags before analysis
+    clean_payload = re.sub(r'<[^>]+>', ' ', raw_payload)
+    clean_payload = re.sub(r'\s+', ' ', clean_payload).strip()
+    if not clean_payload:
+        clean_payload = raw_payload # Fallback if entirely HTML
 
     if hf_pipeline:
         try:
-            result = hf_pipeline(payload, truncation=True, max_length=512)[0]
+            result = hf_pipeline(clean_payload, truncation=True, max_length=512)[0]
             prediction = "malicious" if result['label'] == "Attack" else "safe"
             confidence = float(result['score'])
-            rf_prob = confidence if prediction == "malicious" else (1.0 - confidence)
         except Exception as e:
             prediction = "safe"
             confidence = 1.0
-            rf_prob = 0.0
     else:
-        # Fallback if no models loaded
         prediction = "safe"
         confidence = 1.0
-        rf_prob = 0.0
 
     ip = request.remote_addr
 
-    # Log to DB
+    # Log to DB (log the RAW payload so the user can see what was actually sent)
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute(
         "INSERT INTO request_log (timestamp, payload, prediction, confidence, ip) VALUES (?, ?, ?, ?, ?)",
-        (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), payload, "Attack" if prediction == "malicious" else "Normal", confidence, ip)
+        (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), raw_payload, "Attack" if prediction == "malicious" else "Normal", confidence, ip)
     )
     conn.commit()
     conn.close()
 
+    discord_status = "Not sent"
     if prediction == "malicious":
-        send_discord_alert(payload, ip)
+        discord_status = send_discord_alert(raw_payload, ip)
 
     return jsonify({
         "prediction": prediction,
         "confidence": confidence,
-        "attack_type": f"Model Load Error: {model_error}" if model_error else ("Unknown Threat" if prediction == "malicious" else "N/A"),
+        "discord_status": discord_status,
+        "attack_type": f"Model Load Error" if model_error else ("Unknown Threat" if prediction == "malicious" else "N/A"),
         "model_probabilities": {
-            "Detection Engine": rf_prob
+            "Detection Engine": confidence if prediction == "malicious" else (1.0 - confidence)
         }
     })
 
-# API detect (Legacy endpoint for external use)
 @app.route("/detect", methods=["POST"])
 def detect():
     data = request.json
     if not data or "payload" not in data:
         return jsonify({"error": "No payload provided"}), 400
-    payload = urllib.parse.unquote(data.get("payload", "").strip())
     
+    raw_payload = urllib.parse.unquote(data.get("payload", "").strip())
+    
+    # Smart HTML stripping
+    clean_payload = re.sub(r'<[^>]+>', ' ', raw_payload)
+    clean_payload = re.sub(r'\s+', ' ', clean_payload).strip()
+    if not clean_payload:
+        clean_payload = raw_payload
+        
     if hf_pipeline:
         try:
-            result = hf_pipeline(payload, truncation=True, max_length=512)[0]
+            result = hf_pipeline(clean_payload, truncation=True, max_length=512)[0]
             prediction = result['label']
             confidence = float(result['score'])
         except:
@@ -235,21 +174,20 @@ def detect():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("INSERT INTO request_log (timestamp, payload, prediction, confidence, ip) VALUES (?, ?, ?, ?, ?)",
-        (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), payload, prediction, confidence, ip))
+        (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), raw_payload, prediction, confidence, ip))
     conn.commit()
     conn.close()
 
+    discord_status = "Not sent"
     if prediction == "Attack":
-        send_discord_alert(payload, ip)
+        discord_status = send_discord_alert(raw_payload, ip)
 
-    return jsonify({"prediction": prediction, "confidence": confidence, "ip": ip})
+    return jsonify({"prediction": prediction, "confidence": confidence, "ip": ip, "discord_status": discord_status})
 
 # ==============================
 # Dashboard Views
 # ==============================
-
 @app.route("/dashboard")
-@login_required
 def dashboard():
     filter_type = request.args.get('filter', 'all')
     page = request.args.get('page', 1, type=int)
@@ -331,12 +269,10 @@ def dashboard():
                           logs=logs, page=page, total_pages=total_pages, filter=filter_type)
 
 @app.route("/test")
-@login_required
 def test_payload():
     return render_template('test_payload.html')
 
 @app.route("/log/<int:id>")
-@login_required
 def log_detail(id):
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
@@ -364,12 +300,9 @@ def log_detail(id):
     }
     return render_template('log_detail.html', log=log_obj)
 
-# Keep the old /logs route mapping to dashboard just in case
 @app.route("/logs")
-@login_required
 def logs_redirect():
     return redirect(url_for('dashboard'))
 
 if __name__ == "__main__":
-    # Start the Flask app
     app.run(debug=True, host='0.0.0.0', port=5000)

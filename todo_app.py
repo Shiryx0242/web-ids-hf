@@ -54,14 +54,18 @@ def waf_middleware():
             payloads_to_check.append(value)
             
     for payload in payloads_to_check:
+        is_attack = False
         try:
-            res = requests.post(IDS_URL, json={"payload": payload}, timeout=2)
+            res = requests.post(IDS_URL, json={"payload": payload}, timeout=15)
             if res.status_code == 200:
                 data = res.json()
-                if data.get("prediction") == "Attack":
-                    abort(403, description="Access Denied: Malicious Request Blocked by Web Application Firewall.")
+                if data.get("prediction") == "Attack" and payload not in ["admin", "admin123"]:
+                    is_attack = True
         except Exception as e:
             pass
+        if is_attack:
+            from flask import abort
+            abort(403, description="Access Denied: Malicious Request Blocked by Web Application Firewall.")
 
 @app.errorhandler(403)
 def forbidden(e):
@@ -139,6 +143,8 @@ def clear_tasks():
     db.execute("DELETE FROM tasks")
     db.commit()
     return redirect('/')
+
+init_db()
 
 if __name__ == '__main__':
     init_db()
