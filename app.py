@@ -46,7 +46,7 @@ def send_discord_alert_task(message):
 
 def send_discord_alert(payload, ip):
     message = {
-        "content": f"⚠ Web IDS Alert\\n\\nAttack Detected\\n\\nPayload:\\n{payload}\\n\\nIP:\\n{ip}\\n\\nTime:\\n{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        "content": f"⚠ Web IDS Alert\n\nAttack Detected\n\nPayload:\n{payload}\n\nIP:\n{ip}\n\nTime:\n{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
     }
     if DISCORD_WEBHOOK.startswith("http"):
         threading.Thread(target=send_discord_alert_task, args=(message,)).start()
