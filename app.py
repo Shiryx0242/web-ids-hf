@@ -110,9 +110,21 @@ def api_analyze():
 
     if hf_pipeline:
         try:
-            result = hf_pipeline(clean_payload, truncation=True, max_length=512)[0]
-            prediction = "malicious" if result['label'] == "Attack" else "safe"
-            confidence = float(result['score'])
+            words = clean_payload.split()
+            chunk_size = 20
+            chunks = [' '.join(words[i:i + chunk_size]) for i in range(0, max(1, len(words)), chunk_size)]
+            if not chunks: chunks = [clean_payload]
+            
+            prediction = "safe"
+            confidence = 1.0
+            
+            for chunk in chunks:
+                if not chunk: continue
+                result = hf_pipeline(chunk, truncation=True, max_length=512)[0]
+                if result['label'] == "Attack":
+                    prediction = "malicious"
+                    confidence = float(result['score'])
+                    break
         except Exception as e:
             prediction = "safe"
             confidence = 1.0
@@ -162,9 +174,21 @@ def detect():
         
     if hf_pipeline:
         try:
-            result = hf_pipeline(clean_payload, truncation=True, max_length=512)[0]
-            prediction = result['label']
-            confidence = float(result['score'])
+            words = clean_payload.split()
+            chunk_size = 20
+            chunks = [' '.join(words[i:i + chunk_size]) for i in range(0, max(1, len(words)), chunk_size)]
+            if not chunks: chunks = [clean_payload]
+            
+            prediction = "Normal"
+            confidence = 1.0
+            
+            for chunk in chunks:
+                if not chunk: continue
+                result = hf_pipeline(chunk, truncation=True, max_length=512)[0]
+                if result['label'] == "Attack":
+                    prediction = "Attack"
+                    confidence = float(result['score'])
+                    break
         except:
             prediction = "Normal"
             confidence = 1.0
