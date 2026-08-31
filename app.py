@@ -77,7 +77,9 @@ init_db()
 # ==============================
 @app.route("/")
 def index():
-    return render_template('index.html')
+    import os
+    todo_url = os.environ.get("TODO_URL", "http://127.0.0.1:5001")
+    return render_template('index.html', todo_url=todo_url)
 
 @app.route("/api/analyze", methods=["POST"])
 def api_analyze():
