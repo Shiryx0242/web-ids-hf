@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web-IDS - Test Payload</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-card: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            
+            --accent-primary: #2563eb;
+            --accent-primary-hover: #1d4ed8;
+            --accent-primary-light: rgba(37, 99, 235, 0.1);
+            
+            --accent-green: #059669;
+            --accent-red: #dc2626;
+            --accent-yellow: #d97706;
+            
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.08);
+            --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.1);
+            --bg-code: #f1f5f9;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 0;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--text-primary) !important;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            letter-spacing: -0.5px;
+        }
+
+        .navbar-brand i {
+            color: var(--accent-primary);
+        }
+
+        .nav-link {
+            color: var(--text-secondary) !important;
+            font-weight: 500;
+            padding: 0.5rem 1rem !important;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            font-size: 0.95rem;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--accent-primary) !important;
+            background: var(--accent-primary-light);
+        }
+
+        /* Content */
+        .test-section {
+            padding: 2rem 0;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0 0 0.25rem 0;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin: 0;
+        }
+
+        /* Cards */
+        .card-custom {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .card-header-custom {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+        }
+
+        .card-title-custom {
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        /* Form */
+        .form-label-custom {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .form-control-custom {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: 6px;
+            padding: 0.6rem 0.8rem;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            width: 100%;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .form-control-custom:focus {
+            border-color: var(--accent-primary);
+            outline: none;
+            box-shadow: 0 0 0 3px var(--accent-primary-light);
+        }
+
+        .btn-analyze {
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            margin-top: 1.5rem;
+        }
+
+        .btn-analyze:hover {
+            background: var(--accent-primary-hover);
+        }
+
+        /* Results */
+        .result-card {
+            display: none;
+            margin-top: 1.5rem;
+        }
+
+        .result-card.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            border-radius: 8px;
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+        }
+
+        .result-status {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .badge-type {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .info-row {
+            display: flex;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-color);
+            align-items: center;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            width: 120px;
+            font-weight: 500;
+        }
+
+        .info-value {
+            flex: 1;
+        }
+
+        /* Confidence Bar */
+        .confidence-bar {
+            height: 6px;
+            background: var(--border-color);
+            border-radius: 3px;
+            overflow: hidden;
+            flex: 1;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+
+        .confidence-text {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-left: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Code Block */
+        .code-block {
+            background: var(--bg-code);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            color: var(--text-primary);
+            margin-top: 0.5rem;
+        }
+
+        /* Example Payloads */
+        .example-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .example-group-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .example-item {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .example-item:hover {
+            border-color: var(--accent-primary);
+            background: #f1f5f9;
+        }
+
+        .example-item code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-primary);
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Loading */
+        .loading-overlay {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-shield-halved"></i>
+                Web-IDS
+            </a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/test"><i class="fas fa-flask me-1"></i>Test Payload</a>
+                    </li>
+                    <li class="nav-item ms-lg-2">
+                        <a class="btn btn-sm" href="http://127.0.0.1:5001" target="_blank" style="background: var(--accent-primary-light); color: var(--accent-primary); font-weight: 600; padding: 0.5rem 1rem; border-radius: 6px;">
+                            <i class="fas fa-external-link-alt me-1"></i> Target App
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <section class="test-section">
+        <div class="container">
+            <div class="page-header">
+                <h1 class="page-title">Payload Analyzer</h1>
+                <p class="page-subtitle">Test and analyze HTTP requests against detection models</p>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-lg-7">
+                    <div class="card-custom">
+                        <div class="card-header-custom">
+                            <h3 class="card-title-custom"><i class="fas fa-terminal text-secondary"></i> Request Parameters</h3>
+                        </div>
+
+                        <form id="testForm">
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-4">
+                                    <label class="form-label-custom">Method</label>
+                                    <select class="form-control-custom" id="method">
+                                        <option value="GET">GET</option>
+                                        <option value="POST">POST</option>
+                                        <option value="PUT">PUT</option>
+                                        <option value="DELETE">DELETE</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-8">
+                                    <label class="form-label-custom">Path</label>
+                                    <input type="text" class="form-control-custom" id="path" value="/">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label-custom">Query String</label>
+                                <input type="text" class="form-control-custom" id="queryString" placeholder="id=1&name=test">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label-custom">Body (JSON or Raw)</label>
+                                <textarea class="form-control-custom" id="body" rows="3"></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label-custom">Headers (JSON)</label>
+                                <input type="text" class="form-control-custom" id="headers" placeholder='{"Content-Type": "application/json"}'>
+                            </div>
+
+                            <button type="submit" class="btn-analyze">
+                                <i class="fas fa-play"></i> Run Analysis
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="loading-overlay" id="loading">
+                        <div class="spinner"></div>
+                        <span class="text-secondary" style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;">Processing...</span>
+                    </div>
+
+                    <div class="card-custom result-card" id="resultCard">
+                        <div class="card-header-custom">
+                            <h3 class="card-title-custom"><i class="fas fa-poll text-secondary"></i> Analysis Results</h3>
+                        </div>
+
+                        <div class="result-header" id="resultHeaderBox">
+                            <i class="fas fa-shield-alt" id="resultIcon" style="font-size: 1.5rem;"></i>
+                            <span class="result-status" id="resultStatus"></span>
+                            <span id="resultAttackType"></span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="info-label">Confidence</span>
+                            <div class="info-value d-flex align-items-center">
+                                <div class="confidence-bar">
+                                    <div class="confidence-fill" id="confidenceFill"></div>
+                                </div>
+                                <span class="confidence-text" id="confidenceValue"></span>
+                            </div>
+                        </div>
+
+                        <div id="modelVotes" class="mt-3"></div>
+
+                        <div id="featuresSection" class="mt-4" style="display: none;">
+                            <span class="info-label d-block mb-2">Extracted Features</span>
+                            <div class="code-block" id="featuresData"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-5">
+                    <div class="card-custom">
+                        <div class="card-header-custom">
+                            <h3 class="card-title-custom"><i class="fas fa-bookmark text-secondary"></i> Test Cases</h3>
+                        </div>
+
+                        <div class="example-group">
+                            <div class="example-group-title text-success"><i class="fas fa-check me-1"></i> Benign Traffic</div>
+                            <div class="example-item" onclick="fillExample('GET', '/api/users', 'id=1&page=2', '')">
+                                <span class="badge-type">GET</span><code>/api/users?id=1&page=2</code>
+                            </div>
+                            <div class="example-item" onclick="fillExample('POST', '/api/login', '', '{&quot;username&quot;: &quot;admin&quot;}')">
+                                <span class="badge-type">POST</span><code>/api/login</code>
+                            </div>
+                        </div>
+
+                        <div class="example-group">
+                            <div class="example-group-title text-danger"><i class="fas fa-bug me-1"></i> Attack Vectors</div>
+                            <div class="example-item" onclick="fillExample('GET', '/api/users', 'id=1 OR 1=1--', '')">
+                                <span class="badge-type text-danger border-danger">SQLi</span><code>id=1 OR 1=1--</code>
+                            </div>
+                            <div class="example-item" onclick="fillExample('GET', '/search', 'q=&lt;script&gt;alert(1)&lt;/script&gt;', '')">
+                                <span class="badge-type text-danger border-danger">XSS</span><code>&lt;script&gt;alert(1)&lt;/script&gt;</code>
+                            </div>
+                            <div class="example-item" onclick="fillExample('POST', '/api/cmd', '', '{&quot;cmd&quot;: &quot;; cat /etc/passwd&quot;}')">
+                                <span class="badge-type text-danger border-danger">CMDi</span><code>; cat /etc/passwd</code>
+                            </div>
+                            <div class="example-item" onclick="fillExample('GET', '/page', 'file=../../etc/passwd', '')">
+                                <span class="badge-type text-danger border-danger">Path</span><code>../../etc/passwd</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container"><p>&copy; 2025 Web-IDS</p></div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function fillExample(method, path, query, body) {
+            document.getElementById('method').value = method;
+            document.getElementById('path').value = path;
+            document.getElementById('queryString').value = query;
+            document.getElementById('body').value = body;
+            document.getElementById('testForm').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        document.getElementById('testForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const loading = document.getElementById('loading');
+            const resultCard = document.getElementById('resultCard');
+
+            loading.style.display = 'block';
+            resultCard.classList.remove('show');
+
+            const payload = {
+                method: document.getElementById('method').value,
+                path: document.getElementById('path').value,
+                query_string: document.getElementById('queryString').value,
+                body: document.getElementById('body').value,
+                headers: document.getElementById('headers').value
+            };
+
+            try {
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+
+                loading.style.display = 'none';
+
+                const isSafe = data.prediction === 'safe';
+                const confidence = (data.confidence * 100).toFixed(1);
+                const color = isSafe ? 'var(--accent-green)' : 'var(--accent-red)';
+                const bgBox = isSafe ? 'rgba(5, 150, 105, 0.05)' : 'rgba(220, 38, 38, 0.05)';
+                const borderColor = isSafe ? 'rgba(5, 150, 105, 0.2)' : 'rgba(220, 38, 38, 0.2)';
+
+                document.getElementById('resultHeaderBox').style.background = bgBox;
+                document.getElementById('resultHeaderBox').style.borderColor = borderColor;
+                document.getElementById('resultIcon').className = isSafe ? 'fas fa-check-circle' : 'fas fa-exclamation-triangle';
+                document.getElementById('resultIcon').style.color = color;
+                
+                document.getElementById('resultStatus').textContent = isSafe ? 'Safe Request' : 'Malicious Activity';
+                document.getElementById('resultStatus').style.color = color;
+
+                if (data.attack_type && data.attack_type !== 'N/A') {
+                    document.getElementById('resultAttackType').innerHTML = `<span class="badge-type" style="color:var(--accent-red); border-color:var(--accent-red);">${data.attack_type}</span>`;
+                } else {
+                    document.getElementById('resultAttackType').innerHTML = '';
+                }
+
+                document.getElementById('confidenceFill').style.width = confidence + '%';
+                document.getElementById('confidenceFill').style.background = color;
+                document.getElementById('confidenceValue').textContent = confidence + '%';
+                document.getElementById('confidenceValue').style.color = color;
+
+                const votesDiv = document.getElementById('modelVotes');
+                if (data.model_probabilities) {
+                    let html = '<span class="info-label d-block mb-2">Model Voting</span><div style="background: var(--bg-primary); padding: 1rem; border-radius: 6px; border: 1px solid var(--border-color);">';
+                    for (const [model, prob] of Object.entries(data.model_probabilities)) {
+                        const mSafe = prob < 0.5;
+                        const pct = mSafe ? ((1 - prob) * 100).toFixed(1) : (prob * 100).toFixed(1);
+                        const c = mSafe ? 'var(--accent-green)' : 'var(--accent-red)';
+                        html += `<div class="d-flex justify-content-between mb-1" style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;">
+                            <span class="text-secondary">${model}</span>
+                            <span style="color: ${c}">${mSafe ? 'SAFE' : 'THREAT'} [${pct}%]</span>
+                        </div>`;
+                    }
+                    html += '</div>';
+                    votesDiv.innerHTML = html;
+                }
+
+                if (data.features) {
+                    document.getElementById('featuresSection').style.display = 'block';
+                    document.getElementById('featuresData').textContent = JSON.stringify(data.features, null, 2);
+                }
+
+                resultCard.classList.add('show');
+            } catch (error) {
+                loading.style.display = 'none';
+                alert('Error: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>

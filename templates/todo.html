@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workspace Tasks</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f7f5f2;
+            --surface: #ffffff;
+            --surface-hover: #faf9f7;
+            --border: rgba(0,0,0,0.06);
+            --text: #1a1a2e;
+            --text-muted: #8a8a9e;
+            --accent: #b8942e;
+            --accent-hover: #a07e20;
+            --danger: #dc2626;
+            --danger-bg: #fef2f2;
+            --success: #16a34a;
+            --success-bg: #f0fdf4;
+            --card-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            --card-bg: var(--surface);
+            --card-backdrop: none;
+        }
+
+        [data-theme="dark"] {
+            --bg: #0d0d1a;
+            --surface: #16162a;
+            --surface-hover: #1e1e36;
+            --border: rgba(255,255,255,0.06);
+            --text: #e8e6e3;
+            --text-muted: #7a7a8e;
+            --accent: #c9a96e;
+            --accent-hover: #dfc088;
+            --danger: #e05252;
+            --danger-bg: rgba(224,82,82,0.1);
+            --success: #4ade80;
+            --success-bg: rgba(74,222,128,0.1);
+            --card-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            --card-bg: rgba(22,22,42,0.8);
+            --card-backdrop: blur(20px);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            letter-spacing: 0.01em;
+            transition: background-color 0.2s ease, color 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            letter-spacing: -0.02em;
+        }
+
+        code, pre {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        header {
+            width: 100%;
+            max-width: 800px;
+            padding: 2rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: fadeInUp 0.4s ease forwards;
+        }
+
+        .brand {
+            font-size: 1.25rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .greeting {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .logout-link {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.2s ease;
+        }
+
+        .logout-link:hover {
+            color: var(--accent-hover);
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: background-color 0.2s ease, color 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--surface-hover);
+        }
+
+        .theme-toggle svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        main {
+            width: 100%;
+            max-width: 800px;
+            padding: 0 1.5rem 3rem;
+        }
+
+        .app-card {
+            background: var(--card-bg);
+            backdrop-filter: var(--card-backdrop);
+            -webkit-backdrop-filter: var(--card-backdrop);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--card-shadow);
+            animation: fadeInUp 0.6s ease forwards;
+            animation-delay: 0.1s;
+            opacity: 0;
+        }
+
+        .add-task-form {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 0.875rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background-color: var(--surface);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(184, 148, 46, 0.1);
+        }
+
+        button.primary {
+            padding: 0.875rem 1.5rem;
+            background-color: var(--accent);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-weight: 500;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            white-space: nowrap;
+        }
+
+        button.primary:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .task-list {
+            list-style: none;
+        }
+
+        .task-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            font-size: 1rem;
+            transition: background-color 0.2s ease;
+        }
+
+        .task-item:last-child {
+            border-bottom: none;
+        }
+
+        .task-item:hover {
+            background-color: var(--surface-hover);
+        }
+
+        .task-item.empty {
+            color: var(--text-muted);
+            justify-content: center;
+            font-style: italic;
+            border-bottom: none;
+        }
+
+        .task-item span {
+            word-break: break-all;
+        }
+
+        .clear-form {
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        button.clear-btn {
+            background: none;
+            border: none;
+            color: var(--danger);
+            font-family: inherit;
+            font-size: 0.9rem;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: background-color 0.2s ease;
+            opacity: 0.8;
+        }
+
+        button.clear-btn:hover {
+            background-color: var(--danger-bg);
+            opacity: 1;
+        }
+
+        /* Icons for toggle */
+        #sun-icon { display: none; }
+        [data-theme="dark"] #sun-icon { display: block; }
+        [data-theme="dark"] #moon-icon { display: none; }
+
+        @media (max-width: 600px) {
+            .add-task-form {
+                flex-direction: column;
+            }
+            .header-actions {
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand">Workspace</div>
+        <div class="header-actions">
+            <span class="greeting">Hi, {{ username }}</span>
+            <a href="/logout" class="logout-link">Logout</a>
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                <svg id="moon-icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                <svg id="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <div class="app-card">
+            <form action="/add" method="POST" class="add-task-form">
+                <input type="text" name="task_name" placeholder="What needs to be done? (Try XSS here)" required>
+                <button type="submit" class="primary">Add Task</button>
+            </form>
+
+            <ul class="task-list">
+                {% if tasks %}
+                    {% for task in tasks %}
+                        <li class="task-item"><span>{{ task[1] | safe }}</span></li>
+                    {% endfor %}
+                {% else %}
+                    <li class="task-item empty">No tasks yet</li>
+                {% endif %}
+            </ul>
+
+            <form action="/clear" method="POST" class="clear-form">
+                <button type="submit" class="clear-btn">Clear all tasks</button>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const currentTheme = localStorage.getItem('todo_theme');
+        
+        if (currentTheme) {
+            document.documentElement.setAttribute('data-theme', currentTheme);
+        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            let theme = document.documentElement.getAttribute('data-theme');
+            if (theme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'light');
+                localStorage.setItem('todo_theme', 'light');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('todo_theme', 'dark');
+            }
+        });
+    </script>
+</body>
+</html>

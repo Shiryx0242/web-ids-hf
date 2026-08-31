@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web-IDS - Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-card: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            
+            --accent-primary: #2563eb;
+            --accent-primary-light: rgba(37, 99, 235, 0.1);
+            
+            --accent-green: #059669;
+            --accent-red: #dc2626;
+            --accent-yellow: #d97706;
+            --accent-purple: #7c3aed;
+            --accent-cyan: #0891b2;
+            
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.08);
+            --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 0;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--text-primary) !important;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            letter-spacing: -0.5px;
+        }
+
+        .navbar-brand i {
+            color: var(--accent-primary);
+        }
+
+        .nav-link {
+            color: var(--text-secondary) !important;
+            font-weight: 500;
+            padding: 0.5rem 1rem !important;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            font-size: 0.95rem;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--accent-primary) !important;
+            background: var(--accent-primary-light);
+        }
+
+        /* Dashboard */
+        .dashboard {
+            padding: 2rem 0;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin: 0;
+        }
+
+        /* Stats Cards */
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+        }
+
+        .stat-card:hover {
+            box-shadow: var(--shadow-md);
+            border-color: #cbd5e1;
+            transform: translateY(-2px);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .stat-icon.primary { background: var(--accent-primary-light); color: var(--accent-primary); }
+        .stat-icon.green { background: rgba(5, 150, 105, 0.1); color: var(--accent-green); }
+        .stat-icon.red { background: rgba(220, 38, 38, 0.1); color: var(--accent-red); }
+        .stat-icon.yellow { background: rgba(217, 119, 6, 0.1); color: var(--accent-yellow); }
+
+        .stat-info {
+            flex: 1;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            line-height: 1;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Cards */
+        .card-custom {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .card-header-custom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title-custom {
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        /* Table */
+        .table-custom {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 0;
+        }
+
+        .table-custom th {
+            background: #f8fafc;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .table-custom td {
+            padding: 1rem;
+            font-size: 0.9rem;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        .table-custom tbody tr:hover td {
+            background: #f1f5f9;
+        }
+
+        /* Code/Mono styling */
+        .code-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        /* Badges */
+        .badge-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            border: 1px solid transparent;
+        }
+
+        .badge-safe {
+            background: rgba(5, 150, 105, 0.1);
+            color: var(--accent-green);
+            border-color: rgba(5, 150, 105, 0.2);
+        }
+
+        .badge-danger {
+            background: rgba(220, 38, 38, 0.1);
+            color: var(--accent-red);
+            border-color: rgba(220, 38, 38, 0.2);
+        }
+
+        .badge-type {
+            background: #f1f5f9;
+            color: var(--text-secondary);
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Pagination */
+        .pagination-custom .page-link {
+            background: var(--bg-card);
+            border-color: var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.5rem 0.85rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .pagination-custom .page-link:hover {
+            background: #f1f5f9;
+            color: var(--text-primary);
+        }
+
+        .pagination-custom .page-item.active .page-link {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+            color: white;
+        }
+
+        /* Filter */
+        .filter-group {
+            display: inline-flex;
+            background: #f1f5f9;
+            padding: 0.25rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .filter-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .filter-btn.active {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        /* Footer */
+        .footer {
+            padding: 2rem 0;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .action-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .action-btn:hover {
+            background: var(--accent-primary-light);
+            color: var(--accent-primary);
+            border-color: var(--accent-primary);
+        }
+
+        @media (max-width: 768px) {
+            .page-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-shield-halved"></i>
+                Web-IDS
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="fas fa-home me-1"></i>Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/dashboard"><i class="fas fa-chart-line me-1"></i>Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/test"><i class="fas fa-flask me-1"></i>Test</a>
+                    </li>
+                    <li class="nav-item ms-lg-2">
+                        <a class="btn btn-sm" href="http://127.0.0.1:5001" target="_blank" style="background: var(--accent-primary-light); color: var(--accent-primary); font-weight: 600; padding: 0.5rem 1rem; border-radius: 6px;">
+                            <i class="fas fa-external-link-alt me-1"></i> Target App
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Content -->
+    <section class="dashboard">
+        <div class="container">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Security Dashboard</h1>
+                    <p class="page-subtitle">Real-time threat monitoring and analysis</p>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-6 col-lg-3">
+                    <div class="stat-card">
+                        <div class="stat-icon primary">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-label">Total Requests</div>
+                            <div class="stat-value" style="color: var(--accent-primary);">{{ stats.total }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="stat-card">
+                        <div class="stat-icon green">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-label">Safe Traffic</div>
+                            <div class="stat-value" style="color: var(--accent-green);">{{ stats.safe }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="stat-card">
+                        <div class="stat-icon red">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-label">Threats Detected</div>
+                            <div class="stat-value" style="color: var(--accent-red);">{{ stats.malicious }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="stat-card">
+                        <div class="stat-icon yellow">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-label">Threat Rate</div>
+                            <div class="stat-value" style="color: var(--accent-yellow);">
+                                {% if stats.total > 0 %}
+                                    {{ "%.1f"|format(stats.malicious / stats.total * 100) }}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="row g-4 mb-4">
+                <div class="col-lg-8">
+                    <div class="card-custom">
+                        <div class="card-header-custom">
+                            <h3 class="card-title-custom">
+                                <i class="fas fa-chart-area text-secondary"></i> Traffic Analysis
+                            </h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="timelineChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card-custom" style="height: 100%;">
+                        <div class="card-header-custom">
+                            <h3 class="card-title-custom">
+                                <i class="fas fa-chart-pie text-secondary"></i> Distribution
+                            </h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="distributionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attack Types Chart Row -->
+            <div class="row g-4 mb-4">
+                <div class="col-lg-6">
+                    <div class="card-custom">
+                        <div class="card-header-custom">
+                            <h3 class="card-title-custom">
+                                <i class="fas fa-bug text-secondary"></i> Attack Vectors
+                            </h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="attackTypesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card-custom">
+                        <div class="card-header-custom">
+                            <h3 class="card-title-custom">
+                                <i class="fas fa-network-wired text-secondary"></i> Top Source IPs
+                            </h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="sourceIpChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter and Table -->
+            <div class="card-custom">
+                <div class="card-header-custom">
+                    <h3 class="card-title-custom">
+                        <i class="fas fa-list text-secondary"></i> Request Logs
+                    </h3>
+                    <div class="filter-group">
+                        <button class="filter-btn {% if filter == 'all' %}active{% endif %}" onclick="filterLogs('all')">All</button>
+                        <button class="filter-btn {% if filter == 'safe' %}active{% endif %}" onclick="filterLogs('safe')">Safe</button>
+                        <button class="filter-btn {% if filter == 'malicious' %}active{% endif %}" onclick="filterLogs('malicious')">Malicious</button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table-custom">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Source IP</th>
+                                <th>Method</th>
+                                <th>Path</th>
+                                <th>Status</th>
+                                <th>Classification</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in logs %}
+                            <tr>
+                                <td class="code-text text-secondary">{{ log.timestamp }}</td>
+                                <td><span class="code-text">{{ log.source_ip }}</span></td>
+                                <td><span class="badge-type">{{ log.method }}</span></td>
+                                <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ log.path }}">
+                                    <span class="code-text text-secondary">{{ log.path }}</span>
+                                </td>
+                                <td>
+                                    {% if log.prediction == 'safe' %}
+                                        <span class="badge-status badge-safe"><i class="fas fa-check"></i> Safe</span>
+                                    {% else %}
+                                        <span class="badge-status badge-danger"><i class="fas fa-times"></i> Malicious</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if log.attack_type and log.attack_type != 'N/A' %}
+                                        <span class="badge-type">{{ log.attack_type }}</span>
+                                    {% else %}
+                                        <span class="text-secondary">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="/log/{{ log.id }}" class="action-btn" title="View Details">
+                                        <i class="fas fa-external-link-alt"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if total_pages > 1 %}
+                <nav class="mt-4">
+                    <ul class="pagination pagination-custom justify-content-end mb-0">
+                        <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+                            <a class="page-link" href="?page={{ page - 1 }}&filter={{ filter }}">Prev</a>
+                        </li>
+                        {% for p in range(1, total_pages + 1) %}
+                            {% if p == page %}
+                                <li class="page-item active"><a class="page-link" href="#">{{ p }}</a></li>
+                            {% elif p <= 3 or p > total_pages - 3 or (p >= page - 2 and p <= page + 2) %}
+                                <li class="page-item"><a class="page-link" href="?page={{ p }}&filter={{ filter }}">{{ p }}</a></li>
+                            {% elif p == 4 or p == total_pages - 3 %}
+                                <li class="page-item disabled"><a class="page-link" href="#">...</a></li>
+                            {% endif %}
+                        {% endfor %}
+                        <li class="page-item {% if page >= total_pages %}disabled{% endif %}">
+                            <a class="page-link" href="?page={{ page + 1 }}&filter={{ filter }}">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Web-IDS</p>
+        </div>
+    </footer>
+
+    <script>
+        function filterLogs(type) {
+            window.location.href = '/dashboard?filter=' + type;
+        }
+
+        Chart.defaults.font.family = "'Inter', sans-serif";
+        Chart.defaults.color = '#64748b';
+        
+        const colors = {
+            primary: '#2563eb',
+            primaryLight: 'rgba(37, 99, 235, 0.1)',
+            green: '#059669',
+            greenLight: 'rgba(5, 150, 105, 0.1)',
+            red: '#dc2626',
+            redLight: 'rgba(220, 38, 38, 0.1)',
+            purple: '#7c3aed',
+            cyan: '#0891b2',
+            gridColor: '#f1f5f9'
+        };
+
+        // Timeline Chart
+        const timelineData = {{ timeline_data | tojson }};
+        if (timelineData && timelineData.labels) {
+            new Chart(document.getElementById('timelineChart'), {
+                type: 'line',
+                data: {
+                    labels: timelineData.labels,
+                    datasets: [
+                        {
+                            label: 'Safe',
+                            data: timelineData.safe,
+                            borderColor: colors.green,
+                            backgroundColor: colors.greenLight,
+                            fill: true,
+                            tension: 0.3,
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4
+                        },
+                        {
+                            label: 'Malicious',
+                            data: timelineData.malicious,
+                            borderColor: colors.red,
+                            backgroundColor: colors.redLight,
+                            fill: true,
+                            tension: 0.3,
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', align: 'end', labels: { usePointStyle: true, boxWidth: 8 } }
+                    },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { grid: { color: colors.gridColor }, beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        // Distribution Chart
+        new Chart(document.getElementById('distributionChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Safe', 'Malicious'],
+                datasets: [{
+                    data: [{{ stats.safe }}, {{ stats.malicious }}],
+                    backgroundColor: [colors.green, colors.red],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+                },
+                cutout: '70%'
+            }
+        });
+
+        // Attack Types Chart
+        const attackData = {{ attack_types | tojson }};
+        if (attackData) {
+            const attackLabels = Object.keys(attackData);
+            const attackValues = Object.values(attackData);
+            const bgColors = [colors.red, colors.purple, colors.cyan, colors.primary];
+
+            new Chart(document.getElementById('attackTypesChart'), {
+                type: 'bar',
+                data: {
+                    labels: attackLabels,
+                    datasets: [{
+                        data: attackValues,
+                        backgroundColor: attackLabels.map((_, i) => bgColors[i % bgColors.length]),
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { grid: { color: colors.gridColor }, beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        // Source IP Chart
+        const ipData = {{ top_ips | tojson }};
+        if (ipData) {
+            const ipLabels = Object.keys(ipData);
+            const ipValues = Object.values(ipData);
+
+            new Chart(document.getElementById('sourceIpChart'), {
+                type: 'bar',
+                data: {
+                    labels: ipLabels,
+                    datasets: [{
+                        data: ipValues,
+                        backgroundColor: colors.primary,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: colors.gridColor }, beginAtZero: true },
+                        y: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

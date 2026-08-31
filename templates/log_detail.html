@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web-IDS - Log Detail #{{ log.id }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-card: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            
+            --accent-primary: #2563eb;
+            --accent-primary-hover: #1d4ed8;
+            --accent-primary-light: rgba(37, 99, 235, 0.1);
+            
+            --accent-green: #059669;
+            --accent-red: #dc2626;
+            --accent-yellow: #d97706;
+            
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.08);
+            --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.1);
+            --bg-code: #f1f5f9;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 0;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--text-primary) !important;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            letter-spacing: -0.5px;
+        }
+
+        .navbar-brand i {
+            color: var(--accent-primary);
+        }
+
+        .nav-link {
+            color: var(--text-secondary) !important;
+            font-weight: 500;
+            padding: 0.5rem 1rem !important;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            font-size: 0.95rem;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--accent-primary) !important;
+            background: var(--accent-primary-light);
+        }
+
+        /* Content */
+        .detail-section {
+            padding: 2rem 0;
+        }
+
+        .back-btn {
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            transition: color 0.2s ease;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .back-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+
+        .badge-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            border: 1px solid transparent;
+        }
+
+        .badge-safe {
+            background: rgba(5, 150, 105, 0.1);
+            color: var(--accent-green);
+            border-color: rgba(5, 150, 105, 0.2);
+        }
+
+        .badge-danger {
+            background: rgba(220, 38, 38, 0.1);
+            color: var(--accent-red);
+            border-color: rgba(220, 38, 38, 0.2);
+        }
+
+        /* Cards */
+        .card-custom {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header-custom {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+        }
+
+        .card-title-custom {
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .info-row {
+            display: flex;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-color);
+            align-items: flex-start;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            width: 140px;
+            font-weight: 500;
+        }
+
+        .info-value {
+            flex: 1;
+        }
+
+        .code-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            background: var(--bg-code);
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Confidence Bar */
+        .confidence-bar {
+            height: 6px;
+            background: var(--border-color);
+            border-radius: 3px;
+            overflow: hidden;
+            flex: 1;
+        }
+
+        .confidence-fill {
+            height: 100%;
+        }
+
+        .confidence-text {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-left: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Code Block */
+        .code-block {
+            background: var(--bg-code);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            color: var(--text-primary);
+            max-height: 400px;
+        }
+
+        .footer {
+            padding: 2rem 0;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-shield-halved"></i>
+                Web-IDS
+            </a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/test">Test</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <section class="detail-section">
+        <div class="container">
+            <a href="/dashboard" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+
+            <div class="page-header">
+                <h1 class="page-title">Event Record #{{ log.id }}</h1>
+                {% if log.prediction == 'safe' %}
+                    <span class="badge-status badge-safe"><i class="fas fa-check"></i> Safe</span>
+                {% else %}
+                    <span class="badge-status badge-danger"><i class="fas fa-times"></i> Malicious</span>
+                {% endif %}
+                {% if log.attack_type and log.attack_type != 'N/A' %}
+                    <span class="code-text" style="color: var(--accent-red); border-color: var(--accent-red);">{{ log.attack_type }}</span>
+                {% endif %}
+            </div>
+
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="card-custom" style="height: 100%;">
+                        <div class="card-header-custom">
+                            <h3 class="card-title-custom"><i class="fas fa-network-wired text-secondary"></i> Request Headers</h3>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Timestamp</span>
+                            <span class="info-value code-text text-secondary bg-transparent border-0 p-0">{{ log.timestamp }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Source IP</span>
+                            <span class="info-value"><span class="code-text">{{ log.source_ip }}</span></span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Method</span>
+                            <span class="info-value"><span class="code-text">{{ log.method }}</span></span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Path</span>
+                            <span class="info-value code-text text-secondary bg-transparent border-0 p-0">{{ log.path }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">User Agent</span>
+                            <span class="info-value text-secondary" style="font-size: 0.85rem;">{{ log.user_agent or 'N/A' }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="card-custom" style="height: 100%;">
+                        <div class="card-header-custom">
+                            <h3 class="card-title-custom"><i class="fas fa-microchip text-secondary"></i> Engine Analysis</h3>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Classification</span>
+                            <span class="info-value">
+                                {% if log.prediction == 'safe' %}
+                                    <span style="color: var(--accent-green); font-weight: 600;">Safe</span>
+                                {% else %}
+                                    <span style="color: var(--accent-red); font-weight: 600;">Malicious</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Confidence</span>
+                            <div class="info-value d-flex align-items-center">
+                                <div class="confidence-bar">
+                                    <div class="confidence-fill" style="width: {{ (log.confidence * 100)|round(1) }}%; background: {% if log.prediction == 'safe' %}var(--accent-green){% else %}var(--accent-red){% endif %};"></div>
+                                </div>
+                                <span class="confidence-text" style="color: {% if log.prediction == 'safe' %}var(--accent-green){% else %}var(--accent-red){% endif %};">
+                                    {{ (log.confidence * 100)|round(1) }}%
+                                </span>
+                            </div>
+                        </div>
+                        
+                        {% if log.model_probabilities %}
+                        <div class="info-row flex-column align-items-stretch border-0 pb-0 mt-2">
+                            <span class="info-label mb-2">Ensemble Voting</span>
+                            <div class="code-block m-0">
+                                {% for model, prob in log.model_probabilities.items() %}
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span class="text-secondary">{{ model }}</span>
+                                        {% if prob >= 0.5 %}
+                                            <span style="color: var(--accent-red);">THREAT [{{ (prob * 100)|round(1) }}%]</span>
+                                        {% else %}
+                                            <span style="color: var(--accent-green);">SAFE [{{ ((1-prob) * 100)|round(1) }}%]</span>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {% if log.prediction == 'malicious' %}
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card-custom">
+                        <div class="card-header-custom">
+                            <h3 class="card-title-custom"><i class="fas fa-spider text-secondary"></i> Payload Inspection</h3>
+                        </div>
+
+                        {% if log.query_string %}
+                        <div class="info-row">
+                            <span class="info-label">Query String</span>
+                            <span class="info-value"><div class="code-block m-0 p-2">{{ log.query_string }}</div></span>
+                        </div>
+                        {% endif %}
+
+                        {% if log.body %}
+                        <div class="info-row">
+                            <span class="info-label">Body</span>
+                            <span class="info-value"><div class="code-block m-0 p-2">{{ log.body }}</div></span>
+                        </div>
+                        {% endif %}
+
+                        {% if log.features %}
+                        <div class="info-row flex-column align-items-stretch border-0 mt-3">
+                            <span class="info-label mb-2">Feature Vectors</span>
+                            <div class="code-block m-0">{{ log.features | tojson(indent=2) }}</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="card-custom mt-4">
+                <div class="card-header-custom">
+                    <h3 class="card-title-custom"><i class="fas fa-database text-secondary"></i> Raw Log Entry</h3>
+                </div>
+                <div class="code-block">{{ log | tojson(indent=2) }}</div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container"><p>&copy; 2025 Web-IDS</p></div>
+    </footer>
+</body>
+</html>

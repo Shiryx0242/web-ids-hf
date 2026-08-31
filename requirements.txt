@@ -1,0 +1,12 @@
+Flask
+requests
+pandas
+scikit-learn==1.8.0
+joblib
+numpy
+gunicorn
+matplotlib
+transformers
+torch
+datasets
+accelerate
