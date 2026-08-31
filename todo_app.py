@@ -10,6 +10,8 @@ app.config['SESSION_COOKIE_NAME'] = 'todo_session' # ป้องกัน Cooki
 # รองรับการรันบน Serverless และตั้งค่า URL ชี้ไปที่ Render หรือ Localhost
 DATABASE = '/tmp/todo_test.db' if os.environ.get('VERCEL') == '1' else 'todo_test.db'
 IDS_URL = os.environ.get('IDS_URL', "http://127.0.0.1:5000/detect")
+if not IDS_URL.endswith('/detect'):
+    IDS_URL = IDS_URL.rstrip('/') + '/detect'
 
 def get_db():
     db = getattr(g, '_database', None)
